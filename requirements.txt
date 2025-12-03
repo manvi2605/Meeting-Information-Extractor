@@ -4,4 +4,5 @@ python-dotenv
 requests
 pydantic
 gunicorn
-
+Flask
+flask-cors

@@ -1,6 +1,7 @@
 ﻿import os
 import requests
 import json
+import re
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -15,6 +16,10 @@ def extract_action_items(transcript: str, meeting_id: str = "meeting_1"):
     
     # Load environment variables fresh
     load_dotenv(override=True)
+    
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise Exception("GEMINI_API_KEY is not set in environment (.env). Set GEMINI_API_KEY before calling the API.")
     
     model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
     api_version = os.getenv("GEMINI_API_VERSION", "v1beta")
@@ -53,10 +58,10 @@ def extract_action_items(transcript: str, meeting_id: str = "meeting_1"):
 
     headers = {
         "Content-Type": "application/json",
-        "X-goog-api-key": API_KEY
+        "X-goog-api-key": api_key
     }
 
-    response = requests.post(gemini_url, headers=headers, data=json.dumps(payload))
+    response = requests.post(gemini_url, headers=headers, data=json.dumps(payload), timeout=30)
 
     if response.status_code != 200:
         raise Exception(f"Gemini API Error {response.status_code}: {response.text}")
@@ -67,19 +72,26 @@ def extract_action_items(transcript: str, meeting_id: str = "meeting_1"):
     result_text = data["candidates"][0]["content"]["parts"][0]["text"]
 
     # Remove markdown code blocks if present
-    if result_text.startswith("```json"):
-        result_text = result_text[7:]  # Remove ```json
-    if result_text.startswith("```"):
-        result_text = result_text[3:]  # Remove ```
-    if result_text.endswith("```"):
-        result_text = result_text[:-3]  # Remove trailing ```
+    if isinstance(result_text, str):
+        if result_text.strip().startswith("```json"):
+            result_text = result_text.strip()[7:]
+        if result_text.strip().startswith("```"):
+            result_text = result_text.strip()[3:]
+        if result_text.strip().endswith("```"):
+            result_text = result_text.strip()[:-3]
     
     result_text = result_text.strip()
 
     # Convert string JSON → Python dict
     try:
         result_json = json.loads(result_text)
-    except json.JSONDecodeError as e:
-        raise Exception(f"Model returned invalid JSON:\n{result_text}\n\nError: {str(e)}")
-
-    return result_json
+        return result_json
+    except json.JSONDecodeError:
+        # Fallback: attempt to extract JSON substring
+        m = re.search(r"(\{[\s\S]*\})", result_text)
+        if m:
+            try:
+                return json.loads(m.group(1))
+            except Exception:
+                pass
+        raise Exception(f"Model returned invalid JSON:\n{result_text}")
