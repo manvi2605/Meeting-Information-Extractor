@@ -1,10 +1,12 @@
-# server/main.py
-import os
+﻿import os
 import logging
 from datetime import datetime
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
@@ -18,10 +20,35 @@ logger = logging.getLogger("meeting_extractor")
 # --- FastAPI app ---
 app = FastAPI(title="Meeting Extractor", version="1.0")
 
+# --- Enable CORS ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- Serve static frontend files ---
+frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+if os.path.exists(frontend_dir):
+    app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
+
 # --- Health / root route ---
 @app.get("/")
 async def home():
     return {"status": "ok", "message": "Meeting Extractor API is running!"}
+
+
+# --- Serve UI at /ui ---
+@app.get("/ui")
+async def ui():
+    """Serve the frontend UI."""
+    ui_file = os.path.join(frontend_dir, "index.html")
+    if os.path.exists(ui_file):
+        return FileResponse(ui_file, media_type="text/html")
+    else:
+        raise HTTPException(status_code=404, detail="Frontend not found at frontend/index.html")
 
 
 # --- Request model ---

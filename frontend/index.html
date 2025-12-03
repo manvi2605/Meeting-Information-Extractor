@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Extractor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #1565c0;
+            line-height: 1.6;
+        }
+        
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 220px;
+            padding: 15px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #extractBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+        
+        #extractBtn:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6b3f99 100%);
+        }
+        
+        #clearBtn {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        #clearBtn:hover {
+            background: #e0e0e0;
+        }
+        
+        h2 {
+            color: #333;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        #output {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            font-size: 13px;
+            line-height: 1.6;
+            font-family: 'Courier New', monospace;
+            max-height: 600px;
+            overflow-y: auto;
+            color: #333;
+            word-break: break-word;
+        }
+        
+        .loading {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .error {
+            color: #d32f2f;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Meeting Extractor</h1>
+        <p class="subtitle">Extract action items from meeting transcripts instantly</p>
+        
+        <div class="info-box">
+            💡 Paste a meeting transcript or JSON payload (with transcript, meeting_id, format fields)
+        </div>
+        
+        <label for="transcript">Transcript or JSON Payload:</label>
+        <textarea id="transcript" placeholder='Paste transcript or: {"transcript":"...", "meeting_id":"T-001", "format":"pretty"}'></textarea>
+        
+        <div class="button-group">
+            <button id="extractBtn" onclick="sendRequest()">📋 Extract Action Items</button>
+            <button id="clearBtn" onclick="clearForm()">🗑️ Clear</button>
+        </div>
+        
+        <h2>Results:</h2>
+        <div id="output">Response will appear here...</div>
+    </div>
+
+    <script>
+        async function sendRequest() {
+            const transcript = document.getElementById("transcript").value.trim();
+            
+            if (!transcript) {
+                alert("Please paste a transcript or JSON payload!");
+                return;
+            }
+            
+            // Default request
+            let body = {
+                transcript: transcript,
+                format: "pretty"
+            };
+            
+            // Try to parse JSON if pasted
+            try {
+                const parsed = JSON.parse(transcript);
+                if (parsed && typeof parsed === 'object') {
+                    if (parsed.transcript) body.transcript = parsed.transcript;
+                    if (parsed.meeting_id) body.meeting_id = parsed.meeting_id;
+                    if (parsed.format) body.format = parsed.format;
+                }
+            } catch (e) {
+                // Not JSON - treat as plain transcript
+            }
+            
+            document.getElementById("output").innerHTML = '<span class="loading">⏳ Processing...</span>';
+            
+            try {
+                const response = await fetch("/extract", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                const data = await response.json();
+                
+                // Display formatted response if available
+                if (data && data.formatted) {
+                    document.getElementById("output").textContent = data.formatted;
+                } else if (data && data.result) {
+                    document.getElementById("output").textContent = JSON.stringify(data.result, null, 2);
+                } else if (data && data.success === false && data.error) {
+                    document.getElementById("output").innerHTML = '<span class="error">❌ Error: ' + data.error + '</span>';
+                } else {
+                    document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                document.getElementById("output").innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+            }
+        }
+        
+        function clearForm() {
+            document.getElementById("transcript").value = "";
+            document.getElementById("output").textContent = "Response will appear here...";
+            document.getElementById("transcript").focus();
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById("transcript").addEventListener("keydown", function(event) {
+            if (event.ctrlKey && event.key === "Enter") {
+                sendRequest();
+            }
+        });
+    </script>
+</body>
+</html>
