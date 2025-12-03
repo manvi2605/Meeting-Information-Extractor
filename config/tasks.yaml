@@ -1,0 +1,32 @@
+﻿# config/tasks.yaml
+parse_transcript:
+  agent: ingestor
+  description: >
+    Parse transcript into [{speaker, time, sentence}] and return JSON with utterances.
+  expected_output: >
+    JSON with fields: transcript_id, utterances: [{speaker, time, text}].
+
+find_actions:
+  agent: action_finder
+  context: [parse_transcript]
+  description: >
+    Identify candidate action items: for each action item return {id, text, possible_owner, suggested_due, evidence_sentences}
+  expected_output: >
+    JSON list: action_items
+
+prioritize_actions:
+  agent: prioritizer
+  context: [find_actions]
+  description: >
+    Rank the action items by urgency/impact, and mark confidence.
+  expected_output: >
+    JSON list: prioritized_action_items
+
+format_output:
+  agent: formatter
+  context: [prioritize_actions]
+  description: >
+    Produce final outputs: report.md, tasks.json, tasks.csv
+  output_file: output/report.md
+  expected_output: >
+    Files: output/report.md, output/tasks.json, output/tasks.csv

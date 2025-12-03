@@ -1,0 +1,22 @@
+﻿{
+  "status": "error",
+  "error": "name 'model' is not defined",
+  "meeting_id": "long_test_1",
+  "fallback": {
+    "status": "ok",
+    "meeting_id": "long_test_1",
+    "action_items": [
+      {
+        "id": "A1",
+        "text": "Mock item",
+        "possible_owner": "Bob",
+        "suggested_due": "Friday",
+        "priority": "High",
+        "evidence": [
+          "Example"
+        ],
+        "confidence": 0.5
+      }
+    ]
+  }
+}

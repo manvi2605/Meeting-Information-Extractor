@@ -1,0 +1,31 @@
+﻿{
+  "status": "error",
+  "error": "Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}",
+  "meeting_id": "meeting_ui_2025",
+  "fallback": {
+    "status": "ok",
+    "meeting_id": "meeting_ui_2025",
+    "action_items": [
+      {
+        "id": "A1",
+        "text": "Finish budget report",
+        "possible_owner": "Bob",
+        "suggested_due": "Friday",
+        "priority": "High",
+        "evidence": [
+          "Alice: Finish the report by Friday."
+        ]
+      },
+      {
+        "id": "A2",
+        "text": "Confirm vendor",
+        "possible_owner": "Charlie",
+        "suggested_due": "Next Monday",
+        "priority": "Medium",
+        "evidence": [
+          "Charlie: I will check vendor contracts and send a summary by Wednesday."
+        ]
+      }
+    ]
+  }
+}

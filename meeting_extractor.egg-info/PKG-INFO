@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: meeting-extractor
+Version: 0.0.1
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: python-dotenv
+Requires-Dist: requests
+Requires-Dist: pydantic
+Dynamic: requires-dist

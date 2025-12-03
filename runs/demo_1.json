@@ -1,0 +1,20 @@
+﻿{
+  "status": "ok",
+  "meeting_id": "demo_1",
+  "action_items": [
+    {
+      "id": "A1",
+      "text": "Finish budget report",
+      "possible_owner": "Bob",
+      "suggested_due": "Friday",
+      "priority": "High"
+    },
+    {
+      "id": "A2",
+      "text": "Confirm vendor",
+      "possible_owner": "Charlie",
+      "suggested_due": "Next Monday",
+      "priority": "Medium"
+    }
+  ]
+}

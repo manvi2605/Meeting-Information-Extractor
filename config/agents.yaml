@@ -1,0 +1,24 @@
+﻿# config/agents.yaml
+ingestor:
+  role: "Transcript ingestor"
+  goal: "Parse the raw meeting transcript into structured paragraphs, speakers, and timestamps."
+  backstory: "I parse meeting transcripts into JSON with speaker and sentence-level granularity."
+  llm: "gpt-4o-mini"
+
+action_finder:
+  role: "Action item finder"
+  goal: "Identify candidate action items, suggested owners, and suggested due-dates from parsed transcript."
+  backstory: "I focus on extracting actionable tasks, their context, and possible assignees."
+  llm: "gpt-4o-mini"
+
+prioritizer:
+  role: "Prioritizer"
+  goal: "Rank identified action items by urgency and impact and produce a prioritized list."
+  backstory: "I use cues like deadlines, 'ASAP', blockers, and frequency of mention to rank items."
+  llm: "gpt-4o-mini"
+
+formatter:
+  role: "Formatter"
+  goal: "Produce final structured outputs: markdown report, CSV shopping list-like tasks, and JSON."
+  backstory: "I prepare neat markdown and machine-readable JSON outputs for consumption."
+  llm: "gpt-4o-mini"
